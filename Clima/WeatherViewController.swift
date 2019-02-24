@@ -84,21 +84,15 @@ class WeatherViewController: UIViewController {
     
     
     //Write the didFailWithError method here:
-    
-    
-    
-
-    
-    //MARK: - Change City Delegate methods
-    /***************************************************************/
-    
-    
-    //Write the userEnteredANewCityName Delegate method here:
-    
 
     
     //Write the PrepareForSegue Method here
-    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if segue.identifier == "changeCityName" {
+            let destinationVC = segue.destination as! ChangeCityViewController
+            destinationVC.delegate = self
+        }
+    }
     
     
     
@@ -112,7 +106,6 @@ extension WeatherViewController: CLLocationManagerDelegate {
             if lastLocation.horizontalAccuracy > 0 {
                 locationManager.stopUpdatingLocation()
                 locationManager.delegate = nil
-                print("longitude \(lastLocation.coordinate.longitude), latitude \(lastLocation.coordinate.latitude)")
                 let latitude = String(lastLocation.coordinate.latitude)
                 let longitude = String(lastLocation.coordinate.longitude)
                 let params: [String : String] = ["lat" : latitude, "lon" : longitude, "appid" : APP_ID]
@@ -123,5 +116,11 @@ extension WeatherViewController: CLLocationManagerDelegate {
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
         print(error)
         cityLabel.text = "Location Unavailable"
+    }
+}
+
+extension WeatherViewController: ChangeCityViewControllerDelegate {
+    func userEnteredANewCityName(city: String) {
+        print(city)
     }
 }

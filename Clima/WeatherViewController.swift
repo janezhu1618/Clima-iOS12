@@ -38,16 +38,13 @@ class WeatherViewController: UIViewController {
     
     
     //MARK: - Networking
-    /***************************************************************/
-    
-    //Write the getWeatherData method here:
     private func getWeatherData(url: String, parameters: [String : String]) {
         Alamofire.request(url, method: .get, parameters: parameters).responseJSON { (response) in
             if response.result.isSuccess {
                 let weatherJSON : JSON = JSON(response.result.value!)
                 self.updateWeatherData(json: weatherJSON)
             } else {
-                print("Error - \(response.result.error?.localizedDescription)")
+                print("Error - \(String(describing: response.result.error))")
                 self.cityLabel.text = "Connection Issues"
             }
         }
@@ -56,7 +53,7 @@ class WeatherViewController: UIViewController {
     private func updateWeatherData(json: JSON) {
         //check jsononlineeditor.org
         if let tempResult = json["main"]["temp"].double {
-        weatherDataModel.temperature = Int(tempResult - 273.15)
+        weatherDataModel.temperature = Int(tempResult)
         weatherDataModel.city = json["name"].stringValue
         weatherDataModel.condition = json["weather"][0]["id"].intValue
         weatherDataModel.weatherIconName = weatherDataModel.updateWeatherIcon(condition: weatherDataModel.condition)
@@ -69,24 +66,10 @@ class WeatherViewController: UIViewController {
     
     private func updateUIWithWeatherData() {
         cityLabel.text = weatherDataModel.city
-        temperatureLabel.text = String(weatherDataModel.temperature)
+        temperatureLabel.text = "\(weatherDataModel.temperature.description)°"
         weatherIcon.image = UIImage(named: weatherDataModel.weatherIconName)
     }
 
-    
-    
-    //MARK: - Location Manager Delegate Methods
-    /***************************************************************/
-    
-    
-    //Write the didUpdateLocations method here:
-    
-    
-    
-    //Write the didFailWithError method here:
-
-    
-    //Write the PrepareForSegue Method here
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "changeCityName" {
             let destinationVC = segue.destination as! ChangeCityViewController
@@ -108,7 +91,7 @@ extension WeatherViewController: CLLocationManagerDelegate {
                 locationManager.delegate = nil
                 let latitude = String(lastLocation.coordinate.latitude)
                 let longitude = String(lastLocation.coordinate.longitude)
-                let params: [String : String] = ["lat" : latitude, "lon" : longitude, "appid" : APP_ID]
+                let params: [String : String] = ["lat" : latitude, "lon" : longitude, "appid" : APP_ID, "units" : "imperial" ]
                 getWeatherData(url: WEATHER_URL, parameters: params)
             }
         }
@@ -121,6 +104,8 @@ extension WeatherViewController: CLLocationManagerDelegate {
 
 extension WeatherViewController: ChangeCityViewControllerDelegate {
     func userEnteredANewCityName(city: String) {
-        print(city)
+        //q for query
+        let params: [String : String] = ["q" : city, "appid" : APP_ID,  "units" : "imperial" ]
+        getWeatherData(url: WEATHER_URL, parameters: params)
     }
 }
